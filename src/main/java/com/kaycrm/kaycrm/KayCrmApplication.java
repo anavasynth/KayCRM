@@ -9,5 +9,4 @@ public class KayCrmApplication {
     public static void main(String[] args) {
         SpringApplication.run(KayCrmApplication.class, args);
     }
-
 }

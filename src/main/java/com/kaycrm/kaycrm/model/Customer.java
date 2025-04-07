@@ -1,15 +1,8 @@
 package com.kaycrm.kaycrm.model;
 
-/* 
-  @author  Anavasynth
-  @project  IntelliJ IDEA
-  @class  Customer
-  version 1.0.0
-  @since 06.03.2025 - 23.35
-*/
-
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.List;
 
 @Entity
 @Table(name = "customers")
@@ -29,4 +22,14 @@ public class Customer {
     private String email;
 
     private String phone;
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> orders;
+
+    // Додайте конструктор з параметрами
+    public Customer(String name, String email, String phone) {
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+    }
 }

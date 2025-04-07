@@ -31,4 +31,10 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
+
+    public Order(String product, Double price, Customer customer) {
+        this.product = product;
+        this.price = price;
+        this.customer = customer;
+    }
 }

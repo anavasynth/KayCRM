@@ -1,12 +1,16 @@
 package com.kaycrm.kaycrm.controller;
 
+import com.kaycrm.kaycrm.dto.CustomerDTO;
+import com.kaycrm.kaycrm.exception.ResourceNotFoundException;
+import com.kaycrm.kaycrm.mapper.CustomerMapper;
 import com.kaycrm.kaycrm.model.Customer;
 import com.kaycrm.kaycrm.service.CustomerService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/customers")
@@ -18,33 +22,29 @@ public class CustomerController {
     }
 
     @GetMapping
-    public List<Customer> getAllCustomers() {
+    public List<CustomerDTO> getAllCustomers() {
         return customerService.getAllCustomers();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Customer> getCustomerById(@PathVariable Long id) {
-        Optional<Customer> customer = customerService.getCustomerById(id);
-        return customer.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<CustomerDTO> getCustomerById(@PathVariable Long id) {
+        Customer customer = customerService.getCustomerById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found:)"));
+        return ResponseEntity.ok(CustomerMapper.INSTANCE.toDto(customer));
     }
 
     @PostMapping
-    public Customer createCustomer(@RequestBody Customer customer) {
-        return customerService.saveCustomer(customer);
+    public CustomerDTO createCustomer(@Valid @RequestBody CustomerDTO customerDTO) {
+        return customerService.saveCustomer(customerDTO);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Customer> updateCustomer(@PathVariable Long id, @RequestBody Customer updatedCustomer) {
-        Optional<Customer> existingCustomer = customerService.getCustomerById(id);
-        if (existingCustomer.isPresent()) {
-            Customer customer = existingCustomer.get();
-            customer.setName(updatedCustomer.getName());
-            customer.setEmail(updatedCustomer.getEmail());
-            customer.setPhone(updatedCustomer.getPhone());
-            return ResponseEntity.ok(customerService.saveCustomer(customer));
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable Long id, @Valid @RequestBody CustomerDTO customerDTO) {
+        Customer existingCustomer = customerService.getCustomerById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+        Customer customer = CustomerMapper.INSTANCE.toEntity(customerDTO);
+        customer.setId(existingCustomer.getId());
+        return ResponseEntity.ok(customerService.saveCustomer(CustomerMapper.INSTANCE.toDto(customer)));
     }
 
     @DeleteMapping("/{id}")
